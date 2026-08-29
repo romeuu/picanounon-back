@@ -33,3 +33,5 @@ build/
 .vscode/
 
 picanounon.db
+*.db
+*.sqlite3
