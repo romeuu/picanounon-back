@@ -35,3 +35,5 @@ build/
 picanounon.db
 *.db
 *.sqlite3
+
+data
