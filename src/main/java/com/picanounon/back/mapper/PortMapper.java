@@ -19,7 +19,9 @@ public class PortMapper {
                 port.getName(),
                 port.getZone(),
                 port.getLat(),
-                port.getLng()
+                port.getLng(),
+                port.getTideStation(),
+                port.getTideOffsetMinutes()
         );
     }
 
@@ -34,7 +36,9 @@ public class PortMapper {
                 dto.getName(),
                 dto.getZone(),
                 dto.getLat(),
-                dto.getLng()
+                dto.getLng(),
+                dto.getTideStation(),
+                dto.getTideOffsetMinutes()
         );
     }
 
@@ -49,7 +53,9 @@ public class PortMapper {
                 dto.getName(),
                 dto.getZone(),
                 dto.getLat(),
-                dto.getLng()
+                dto.getLng(),
+                dto.getTideStation(),
+                dto.getTideOffsetMinutes()
         );
     }
 
@@ -64,7 +70,9 @@ public class PortMapper {
                 port.getName(),
                 port.getZone(),
                 port.getLat(),
-                port.getLng()
+                port.getLng(),
+                port.getTideStation(),
+                port.getTideOffsetMinutes()
         );
     }
 }

@@ -10,11 +10,17 @@ public class PortResponse {
     private Zone zone;
     private Double lat;
     private Double lng;
+    private String tideStation;
+    private Integer tideOffsetMinutes;
 
     public PortResponse() {
     }
 
     public PortResponse(Long id, Integer idZonaMG, String alias, String name, Zone zone, Double lat, Double lng) {
+        this(id, idZonaMG, alias, name, zone, lat, lng, null, 0);
+    }
+
+    public PortResponse(Long id, Integer idZonaMG, String alias, String name, Zone zone, Double lat, Double lng, String tideStation, Integer tideOffsetMinutes) {
         this.id = id;
         this.idZonaMG = idZonaMG;
         this.alias = alias;
@@ -22,6 +28,8 @@ public class PortResponse {
         this.zone = zone;
         this.lat = lat;
         this.lng = lng;
+        this.tideStation = tideStation;
+        this.tideOffsetMinutes = tideOffsetMinutes != null ? tideOffsetMinutes : 0;
     }
 
     public Long getId() {
@@ -78,5 +86,21 @@ public class PortResponse {
 
     public void setLng(Double lng) {
         this.lng = lng;
+    }
+
+    public String getTideStation() {
+        return tideStation;
+    }
+
+    public void setTideStation(String tideStation) {
+        this.tideStation = tideStation;
+    }
+
+    public Integer getTideOffsetMinutes() {
+        return tideOffsetMinutes;
+    }
+
+    public void setTideOffsetMinutes(Integer tideOffsetMinutes) {
+        this.tideOffsetMinutes = tideOffsetMinutes;
     }
 }
