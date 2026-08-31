@@ -56,7 +56,7 @@ class TideControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data[0].portName").value("Baiona"))
-                .andExpect(jsonPath("$.data[0].tideTime").value("05:30")); // 05:25 + 5 mins offset = 05:30
+                .andExpect(jsonPath("$.data[0].tideDateTime").value("2026-08-29T05:30:00")); // 05:25 + 5 mins offset = 05:30
     }
 
     @Test
@@ -77,7 +77,7 @@ class TideControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data[0].portName").value("Muros"))
-                .andExpect(jsonPath("$.data[0].tideTime").value("05:35")); // Vilagarcía 05:30 + 5 mins offset for Muros = 05:35
+                .andExpect(jsonPath("$.data[0].tideDateTime").value("2026-08-29T05:35:00")); // Vilagarcía 05:30 + 5 mins offset for Muros = 05:35
     }
 
     @Test

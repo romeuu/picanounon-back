@@ -5,7 +5,7 @@ import com.picanounon.back.dto.response.TideResponse;
 import com.picanounon.back.model.Tide;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Component
 public class TideMapper {
@@ -42,13 +42,16 @@ public class TideMapper {
         if (dto == null) {
             return null;
         }
-        LocalTime adjustedTime = dto.getTideTime() != null ? dto.getTideTime().plusMinutes(offsetMinutes) : null;
+        LocalDateTime tideDateTime = null;
+        if (dto.getTideDate() != null && dto.getTideTime() != null) {
+            tideDateTime = LocalDateTime.of(dto.getTideDate(), dto.getTideTime()).plusMinutes(offsetMinutes);
+        }
+
         return new TideResponse(
                 dto.getId(),
                 dto.getStationName(),
                 portName,
-                dto.getTideDate(),
-                adjustedTime,
+                tideDateTime,
                 dto.getType(),
                 dto.getHeight()
         );

@@ -3,19 +3,15 @@ package com.picanounon.back.dto.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.picanounon.back.model.TideType;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 public class TideResponse {
     private Long id;
     private String stationName;
     private String portName;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate tideDate;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
-    private LocalTime tideTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime tideDateTime;
 
     private TideType type;
     private Double height;
@@ -23,12 +19,11 @@ public class TideResponse {
     public TideResponse() {
     }
 
-    public TideResponse(Long id, String stationName, String portName, LocalDate tideDate, LocalTime tideTime, TideType type, Double height) {
+    public TideResponse(Long id, String stationName, String portName, LocalDateTime tideDateTime, TideType type, Double height) {
         this.id = id;
         this.stationName = stationName;
         this.portName = portName;
-        this.tideDate = tideDate;
-        this.tideTime = tideTime;
+        this.tideDateTime = tideDateTime;
         this.type = type;
         this.height = height;
     }
@@ -57,20 +52,12 @@ public class TideResponse {
         this.portName = portName;
     }
 
-    public LocalDate getTideDate() {
-        return tideDate;
+    public LocalDateTime getTideDateTime() {
+        return tideDateTime;
     }
 
-    public void setTideDate(LocalDate tideDate) {
-        this.tideDate = tideDate;
-    }
-
-    public LocalTime getTideTime() {
-        return tideTime;
-    }
-
-    public void setTideTime(LocalTime tideTime) {
-        this.tideTime = tideTime;
+    public void setTideDateTime(LocalDateTime tideDateTime) {
+        this.tideDateTime = tideDateTime;
     }
 
     public TideType getType() {
