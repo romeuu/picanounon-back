@@ -1,21 +1,17 @@
 package com.picanounon.back.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
+@AllArgsConstructor
 public enum TideType {
     PLEAMAR("Pleamar"),
     BAJAMAR("Bajamar");
 
-    private final String value;
-
-    TideType(String value) {
-        this.value = value;
-    }
-
     @JsonValue
-    public String getValue() {
-        return value;
-    }
+    private final String value;
 
     public static TideType fromString(String text) {
         if (text == null) {

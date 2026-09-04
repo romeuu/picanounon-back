@@ -1,7 +1,11 @@
 package com.picanounon.back.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
+@AllArgsConstructor
 public enum Zone {
     RIAS_BAIXAS("Rías Baixas"),
     COSTA_DA_MORTE("Costa da Morte"),
@@ -10,16 +14,8 @@ public enum Zone {
     FERROL_BARES("Ferrol-Bares"),
     ARTABRO("Ártabro");
 
-    private final String value;
-
-    Zone(String value) {
-        this.value = value;
-    }
-
     @JsonValue
-    public String getValue() {
-        return value;
-    }
+    private final String value;
 
     public static Zone fromValue(String text) {
         for (Zone z : Zone.values()) {

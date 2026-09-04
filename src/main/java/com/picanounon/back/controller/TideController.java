@@ -4,6 +4,7 @@ import com.picanounon.back.dto.response.ApiResponse;
 import com.picanounon.back.dto.response.TideResponse;
 import com.picanounon.back.service.TideDirectoryWatcher;
 import com.picanounon.back.service.TideService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,15 +17,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tides")
+@RequiredArgsConstructor
 public class TideController {
 
     private final TideService tideService;
     private final TideDirectoryWatcher directoryWatcher;
-
-    public TideController(TideService tideService, TideDirectoryWatcher directoryWatcher) {
-        this.tideService = tideService;
-        this.directoryWatcher = directoryWatcher;
-    }
 
     @PostMapping("/sync-folder")
     public ResponseEntity<ApiResponse<Map<String, Integer>>> syncFolder() {

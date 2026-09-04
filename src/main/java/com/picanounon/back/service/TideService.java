@@ -7,6 +7,8 @@ import com.picanounon.back.model.Tide;
 import com.picanounon.back.repository.PortRepository;
 import com.picanounon.back.repository.TideRepository;
 import com.picanounon.back.util.MeteogaliciaCsvParser;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class TideService {
 
     private static final List<String> REFERENCE_STATIONS = List.of(
@@ -37,16 +41,6 @@ public class TideService {
     private final PortRepository portRepository;
     private final MeteogaliciaCsvParser csvParser;
     private final TideMapper tideMapper;
-
-    public TideService(TideRepository tideRepository,
-                       PortRepository portRepository,
-                       MeteogaliciaCsvParser csvParser,
-                       TideMapper tideMapper) {
-        this.tideRepository = tideRepository;
-        this.portRepository = portRepository;
-        this.csvParser = csvParser;
-        this.tideMapper = tideMapper;
-    }
 
     public int importFromInputStream(InputStream inputStream, String filename) throws Exception {
         String stationName = extractStationFromFilename(filename);
@@ -75,11 +69,12 @@ public class TideService {
                     int count = importFromInputStream(is, csvFile.getFileName().toString());
                     results.put(csvFile.getFileName().toString(), count);
                 } catch (Exception e) {
+                    log.error("Error importing CSV file {}: {}", csvFile.getFileName(), e.getMessage());
                     results.put(csvFile.getFileName().toString(), -1);
                 }
             }
         } catch (Exception e) {
-            // Log error
+            log.error("Error reading directory {}: {}", directoryPath, e.getMessage());
         }
         return results;
     }

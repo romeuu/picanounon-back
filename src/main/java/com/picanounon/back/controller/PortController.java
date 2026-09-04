@@ -5,6 +5,7 @@ import com.picanounon.back.dto.response.ApiResponse;
 import com.picanounon.back.dto.response.PortResponse;
 import com.picanounon.back.mapper.PortMapper;
 import com.picanounon.back.service.PortService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,15 +18,11 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/ports")
+@RequiredArgsConstructor
 public class PortController {
 
     private final PortService portService;
     private final PortMapper portMapper;
-
-    public PortController(PortService portService, PortMapper portMapper) {
-        this.portService = portService;
-        this.portMapper = portMapper;
-    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PortResponse>>> getAllPorts() {

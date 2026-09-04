@@ -6,6 +6,7 @@ import com.picanounon.back.dto.response.ItemResponse;
 import com.picanounon.back.mapper.ItemMapper;
 import com.picanounon.back.model.Item;
 import com.picanounon.back.repository.ItemRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,15 +16,11 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/items")
+@RequiredArgsConstructor
 public class ItemController {
 
     private final ItemRepository itemRepository;
     private final ItemMapper itemMapper;
-
-    public ItemController(ItemRepository itemRepository, ItemMapper itemMapper) {
-        this.itemRepository = itemRepository;
-        this.itemMapper = itemMapper;
-    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ItemResponse>>> getAllItems() {
