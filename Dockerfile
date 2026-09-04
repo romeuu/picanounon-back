@@ -19,15 +19,11 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Crear cartafol para a base de datos SQLite e darlle permisos
-RUN mkdir -p /data
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
 
-# Copiar o JAR xerado na etapa anterior
+# Copiamos o JAR xerado
 COPY --from=builder /app/target/*.jar app.jar
-
-# Variables de contorno para apuntar SQLite ao volume persistente
-ENV SPRING_DATASOURCE_URL=jdbc:sqlite:/data/picanounon.db
-ENV SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.sqlite.JDBC
-ENV SPRING_JPA_DATABASE_PLATFORM=org.hibernate.community.dialect.SQLiteDialect
 
 EXPOSE 8080
 
