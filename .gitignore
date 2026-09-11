@@ -37,3 +37,4 @@ picanounon.db
 *.sqlite3
 
 data
+.env
