@@ -1,5 +1,23 @@
 package com.picanounon.back.service;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.Normalizer;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.picanounon.back.dto.response.TideDayResponse;
 import com.picanounon.back.dto.response.TideResponse;
 import com.picanounon.back.mapper.TideMapper;
 import com.picanounon.back.model.Port;
@@ -7,22 +25,9 @@ import com.picanounon.back.model.Tide;
 import com.picanounon.back.repository.PortRepository;
 import com.picanounon.back.repository.TideRepository;
 import com.picanounon.back.util.MeteogaliciaCsvParser;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.Normalizer;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -41,6 +46,9 @@ public class TideService {
     private final PortRepository portRepository;
     private final MeteogaliciaCsvParser csvParser;
     private final TideMapper tideMapper;
+
+    private static final double AMPLITUDE_MINIMA = 1.15; // Corresponde a coef ~20
+    private static final double AMPLITUDE_MAXIMA = 4.25; // Corresponde a coef ~120
 
     public int importFromInputStream(InputStream inputStream, String filename) throws Exception {
         String stationName = extractStationFromFilename(filename);
@@ -79,11 +87,12 @@ public class TideService {
         return results;
     }
 
-    public List<TideResponse> getTidesForPort(Long portId, LocalDate date) {
+    @Cacheable(value = "tides", key = "{#portId, #date != null ? #date.toString() : T(java.time.LocalDate).now().toString()}")
+    public TideDayResponse getTidesForPort(Long portId, LocalDate date) {
         LocalDate targetDate = date != null ? date : LocalDate.now();
         Optional<Port> portOpt = portRepository.findById(portId);
         if (portOpt.isEmpty()) {
-            return List.of();
+            return null;
         }
 
         Port port = portOpt.get();
@@ -91,7 +100,7 @@ public class TideService {
         int offset = port.getTideOffsetMinutes() != null ? port.getTideOffsetMinutes() : 0;
 
         if (station == null || station.isBlank()) {
-            return List.of();
+            return null;
         }
 
         String targetNormalizedStation = normalizeText(station);
@@ -101,10 +110,96 @@ public class TideService {
                 .filter(t -> normalizeText(t.getStationName()).equals(targetNormalizedStation))
                 .collect(Collectors.toList());
 
-        return portTides.stream()
+        List<Integer> coefficients = this.calculateCoeficientTides(portTides);
+
+        Integer avgCoefficient = coefficients.isEmpty() ? null : (int) Math.round(coefficients.stream().mapToInt(Integer::intValue).average().orElse(0));
+
+        List<TideResponse> tideResponses = portTides.stream()
+            .map(tideMapper::toDTO)
+            .map(dto -> tideMapper.toResponse(dto, port.getName(), offset))
+            .collect(Collectors.toList());
+
+        return TideDayResponse.builder()
+                .tides(tideResponses)
+                .dailyCoefficient(avgCoefficient)
+                .cycleCoefficient(coefficients)
+                .build();
+    }
+
+    public List<TideResponse> getTidesForPortAndDateRange(Port port, LocalDate startDate, LocalDate endDate) {
+        if (port == null) return List.of();
+        String station = port.getTideStation();
+        int offset = port.getTideOffsetMinutes() != null ? port.getTideOffsetMinutes() : 0;
+
+        if (station == null || station.isBlank()) {
+            return List.of();
+        }
+
+        String targetNormalizedStation = normalizeText(station);
+        List<Tide> rangeTides = tideRepository.findByTideDateBetweenOrderByTideDateAscTideTimeAsc(startDate, endDate);
+
+        return rangeTides.stream()
+                .filter(t -> normalizeText(t.getStationName()).equals(targetNormalizedStation))
                 .map(tideMapper::toDTO)
                 .map(dto -> tideMapper.toResponse(dto, port.getName(), offset))
+                .sorted((a, b) -> a.getTideDateTime().compareTo(b.getTideDateTime()))
                 .collect(Collectors.toList());
+    }
+
+    public double calcularAlturaMareaActual(TideResponse anterior, TideResponse seguinte, java.time.LocalDateTime agora) {
+        if (anterior == null && seguinte == null) return 2.0;
+        if (anterior == null) return seguinte.getHeight();
+        if (seguinte == null) return anterior.getHeight();
+
+        long tInicio = anterior.getTideDateTime().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long tFin = seguinte.getTideDateTime().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long tAgora = agora.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        long duracionTotal = tFin - tInicio;
+        if (duracionTotal <= 0) return anterior.getHeight();
+
+        double tempoTranscorrido = tAgora - tInicio;
+        double progreso = Math.min(Math.max((double) tempoTranscorrido / duracionTotal, 0.0), 1.0);
+
+        // Curva cosenoidal: varía de 0 a 1 suavemente
+        double factorCoseno = (1.0 - Math.cos(progreso * Math.PI)) / 2.0;
+
+        double altura = anterior.getHeight() + (seguinte.getHeight() - anterior.getHeight()) * factorCoseno;
+        return Math.round(altura * 100.0) / 100.0;
+    }
+
+    /**
+     * Calcula o coeficiente de marea (escala 20 - 120) a partir da amplitude.
+     *
+     * @param alturaPreamar  Altura máxima en metros (ex: 3.3)
+     * @param alturaBaixamar Altura mínima en metros (ex: 1.0)
+     * @return Coeficiente enteiro calibrado
+     */
+    public int calcularCoeficiente(double amplitude) {
+        // Interpolación lineal sobre o rango 20 - 120
+        double ratio = (amplitude - AMPLITUDE_MINIMA) / (AMPLITUDE_MAXIMA - AMPLITUDE_MINIMA);
+        double coefCalculado = 20.0 + (ratio * 100.0);
+
+        // Axustamos para que non se saia dos límites teóricos habituais
+        int coefFinal = (int) Math.round(coefCalculado);
+        return Math.max(20, Math.min(120, coefFinal));
+    }
+    
+
+    public List<Integer> calculateCoeficientTides(List<Tide> mareas) {
+        List<Integer> coeficientes = new ArrayList<>();
+
+        for (int i = 0; i < mareas.size() - 1; i++) {
+            Tide actual = mareas.get(i);
+            Tide siguiente = mareas.get(i + 1);
+
+            if (!actual.getType().equals(siguiente.getType())) {
+                double amplitude = Math.abs(actual.getHeight() - siguiente.getHeight());
+                coeficientes.add(calcularCoeficiente(amplitude));
+            }
+        }
+
+        return coeficientes;
     }
 
     public Map<String, Long> getStationStatistics() {

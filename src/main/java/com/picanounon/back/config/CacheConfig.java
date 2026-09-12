@@ -22,7 +22,7 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("marineWeather", "tides");
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager("marineWeather", "tides", "forecast");
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(ttlHours, TimeUnit.HOURS)
                 .maximumSize(maxSize)
