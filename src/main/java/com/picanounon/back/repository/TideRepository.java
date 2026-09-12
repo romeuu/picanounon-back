@@ -12,5 +12,7 @@ public interface TideRepository extends JpaRepository<Tide, Long> {
 
     List<Tide> findByTideDateOrderByTideTimeAsc(LocalDate tideDate);
 
+    List<Tide> findByTideDateBetweenOrderByTideDateAscTideTimeAsc(LocalDate startDate, LocalDate endDate);
+
     Optional<Tide> findByStationNameAndTideDateAndTideTime(String stationName, LocalDate tideDate, LocalTime tideTime);
 }

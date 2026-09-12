@@ -1,19 +1,25 @@
 package com.picanounon.back.controller;
 
-import com.picanounon.back.dto.response.ApiResponse;
-import com.picanounon.back.dto.response.TideResponse;
-import com.picanounon.back.service.TideDirectoryWatcher;
-import com.picanounon.back.service.TideService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.picanounon.back.dto.response.ApiResponse;
+import com.picanounon.back.dto.response.TideDayResponse;
+import com.picanounon.back.service.TideDirectoryWatcher;
+import com.picanounon.back.service.TideService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/tides")
@@ -44,12 +50,12 @@ public class TideController {
     }
 
     @GetMapping("/port/{portId}")
-    public ResponseEntity<ApiResponse<List<TideResponse>>> getTidesByPort(
+    public ResponseEntity<ApiResponse<TideDayResponse>> getTidesByPort(
             @PathVariable Long portId,
             @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         
         LocalDate targetDate = date != null ? date : LocalDate.now();
-        List<TideResponse> tides = tideService.getTidesForPort(portId, targetDate);
+        TideDayResponse tides = tideService.getTidesForPort(portId, targetDate);
         return ResponseEntity.ok(ApiResponse.success(tides));
     }
 
