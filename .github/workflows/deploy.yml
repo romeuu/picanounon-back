@@ -6,30 +6,54 @@ on:
       - main
 
 jobs:
-  deploy:
+  diagnose:
+    name: Probas de Conectividade
     runs-on: ubuntu-latest
-
     steps:
-      - name: Executar despregamento vía SSH
+      - name: Probar conectividade TCP bruta
+        env:
+          TARGET_HOST: ${{ secrets.VPS_HOST }}
+          TARGET_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          echo "Comprobando apertura de porto TCP cara a $TARGET_HOST:$TARGET_PORT..."
+          nc -zv -w 10 "$TARGET_HOST" "$TARGET_PORT"
+
+      - name: Probar autenticacion SSH verbosa
+        env:
+          TARGET_HOST: ${{ secrets.VPS_HOST }}
+          TARGET_PORT: ${{ secrets.VPS_PORT }}
+          TARGET_USER: ${{ secrets.VPS_USER }}
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh -v \
+            -o StrictHostKeyChecking=no \
+            -o ConnectTimeout=15 \
+            -p "$TARGET_PORT" \
+            -i ~/.ssh/id_deploy \
+            "$TARGET_USER@$TARGET_HOST" "echo 'Conexión realizada con éxito!'"
+
+  deploy:
+    name: Despregar Aplicacion
+    needs: diagnose
+    runs-on: ubuntu-latest
+    steps:
+      - name: Executar despregamento via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          timeout: 60s
+          command_timeout: 30m
           script: |
             set -e
-
-            # 1. Acceder ao cartafol da aplicación
             cd ${{ secrets.ROUTE }}
-
-            # 2. Descargar os últimos cambios de main
             git fetch origin main
             git reset --hard origin/main
-
-            # 3. Reconstruír e levantar só os servizos que cambiaron
             docker compose build --pull
             docker compose up -d --remove-orphans
-
-            # 4. Limpar imaxes antigas non utilizadas para aforrar disco no VPS
             docker image prune -f
