@@ -21,7 +21,7 @@ jobs:
             set -e
 
             # 1. Acceder ao cartafol da aplicación
-            cd ~/app
+            cd ${{ secrets.ROUTE }}
 
             # 2. Descargar os últimos cambios de main
             git fetch origin main
