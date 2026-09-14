@@ -1,0 +1,35 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Executar despregamento vía SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            set -e
+
+            # 1. Acceder ao cartafol da aplicación
+            cd ~/app
+
+            # 2. Descargar os últimos cambios de main
+            git fetch origin main
+            git reset --hard origin/main
+
+            # 3. Reconstruír e levantar só os servizos que cambiaron
+            docker compose build --pull
+            docker compose up -d --remove-orphans
+
+            # 4. Limpar imaxes antigas non utilizadas para aforrar disco no VPS
+            docker image prune -f
