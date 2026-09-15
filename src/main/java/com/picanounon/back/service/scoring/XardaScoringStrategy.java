@@ -112,12 +112,20 @@ public class XardaScoringStrategy implements SpeciesScoringStrategy {
 
         int finalScore = Math.max(0, Math.min(100, waveScore + lightScore + waterTempScore + windScore + tideScore + coeffModifier));
 
-        // En caso de que a marea este no punto máis baixo, limitamos o score a como máximo a un aprobado limitado (55-60)
-        if (tidePhase == TidePhase.BAIXAMAR) {
-            int scoreReducido = (int) Math.round(finalScore * 0.65);
-            finalScore = Math.min(scoreReducido, 58);
-        }
 
+        Integer minutesToLow = conditions.getMinutesToLowTide();
+
+        // En caso de que a marea este no punto máis baixo, limitamos o score a como máximo a un aprobado limitado (55-60)
+        if (minutesToLow != null) {
+            if (minutesToLow <= 45) {
+                // Estofa pura da baixamar (±45 min ao redor do punto máis baixo)
+                finalScore = Math.min((int) Math.round(finalScore * 0.65), 58);
+            } else if (minutesToLow <= 90) {
+                // Transición suave (entre 45 e 90 min antes ou despois da baixamar)
+                finalScore = Math.min((int) Math.round(finalScore * 0.75), 65);
+            }
+        }
+        
         String verdict = "Condicións desfavorables";
         if (finalScore >= 80) {
             verdict = "Condicións óptimas (Moi bo momento)";

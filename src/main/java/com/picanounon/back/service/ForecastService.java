@@ -1,5 +1,18 @@
 package com.picanounon.back.service;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
 import com.picanounon.back.dto.MarineWeatherDTO;
 import com.picanounon.back.dto.response.DayForecastResponse;
 import com.picanounon.back.dto.response.HourlyForecastResponse;
@@ -12,19 +25,9 @@ import com.picanounon.back.model.TidePhase;
 import com.picanounon.back.model.TideType;
 import com.picanounon.back.repository.PortRepository;
 import com.picanounon.back.service.scoring.ScoringService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -160,6 +163,17 @@ public class ForecastService {
                 Double seaTemperature = getValueOrDefault(weather.getSeaTemperature(), i, 15.0);
                 Double airTemperature = getValueOrDefault(weather.getTemperature(), i, 20.0);
 
+                LocalDateTime closestLowTide = tides.stream()
+                    .filter(t -> t.getType() == TideType.BAJAMAR)
+                    .map(t -> t.getTideDateTime())
+                    .min(Comparator.comparingLong(tideTime -> Math.abs(ChronoUnit.MINUTES.between(dateTime, tideTime))))
+                    .orElse(null);
+
+                    Integer minutesToLow = null;
+                    if (closestLowTide != null) {
+                        minutesToLow = (int) Math.abs(ChronoUnit.MINUTES.between(dateTime, closestLowTide));
+                    }
+
                 MarineConditionsDTO conditions = MarineConditionsDTO.builder()
                         .waveHeight(waveHeight)
                         .wavePeriod(wavePeriod)
@@ -171,6 +185,7 @@ public class ForecastService {
                         .isDaylight(isDay == 1)
                         .waterTemperature(seaTemperature)
                         .temperature(airTemperature)
+                        .minutesToLowTide(minutesToLow)
                         .build();
 
                 ScoreResultDTO requestedResult = scoringService.calculateScore(conditions, targetSpecies);

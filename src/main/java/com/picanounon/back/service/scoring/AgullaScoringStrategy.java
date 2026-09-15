@@ -130,10 +130,17 @@ public class AgullaScoringStrategy implements SpeciesScoringStrategy {
             verdict = "Condicións regulares (Actividade moderada)";
         }
 
+        Integer minutesToLow = conditions.getMinutesToLowTide();
+
         // En caso de que a marea este no punto máis baixo, limitamos o score a 65, xa que limita pero a especie sigue saíndo a comer
-        if (tidePhase == TidePhase.BAIXAMAR) {
-            int scoreReducido = (int) Math.round(finalScore * 0.75);
-            finalScore = Math.min(scoreReducido, 65);
+        if (minutesToLow != null) {
+            if (minutesToLow <= 45) {
+                // Estofa pura da baixamar (±45 min ao redor do punto máis baixo)
+                finalScore = Math.min((int) Math.round(finalScore * 0.75), 65);
+            } else if (minutesToLow <= 90) {
+                // Transición suave (entre 45 e 90 min antes ou despois da baixamar)
+                finalScore = Math.min((int) Math.round(finalScore * 0.88), 75);
+            }
         }
 
         return ScoreResultDTO.builder()
