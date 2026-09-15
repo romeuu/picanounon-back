@@ -1,11 +1,11 @@
 package com.picanounon.back.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -16,6 +16,7 @@ public class MarineWeatherDTO {
     private List<Double> waveHeight;
     private List<Double> wavePeriod;
     private List<Double> windSpeed;
+    private List<Double> windDirection;
     private List<Integer> isDay;
     private List<Double> seaTemperature;
     private List<Double> temperature;

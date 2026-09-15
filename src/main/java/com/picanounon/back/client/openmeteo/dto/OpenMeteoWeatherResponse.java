@@ -1,13 +1,14 @@
 package com.picanounon.back.client.openmeteo.dto;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -29,6 +30,9 @@ public class OpenMeteoWeatherResponse {
 
         @JsonProperty("wind_speed_10m")
         private List<Double> windSpeed10m;
+
+        @JsonProperty("wind_direction_10m")
+        private List<Double> windDirection10m;
 
         @JsonProperty("is_day")
         private List<Integer> isDay;

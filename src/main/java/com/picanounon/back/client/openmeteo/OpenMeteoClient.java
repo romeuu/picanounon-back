@@ -1,14 +1,16 @@
 package com.picanounon.back.client.openmeteo;
 
-import com.picanounon.back.client.openmeteo.dto.OpenMeteoMarineResponse;
-import com.picanounon.back.client.openmeteo.dto.OpenMeteoWeatherResponse;
-import com.picanounon.back.dto.MarineWeatherDTO;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import java.util.List;
+import com.picanounon.back.client.openmeteo.dto.OpenMeteoMarineResponse;
+import com.picanounon.back.client.openmeteo.dto.OpenMeteoWeatherResponse;
+import com.picanounon.back.dto.MarineWeatherDTO;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
@@ -35,7 +37,7 @@ public class OpenMeteoClient {
                 .body(OpenMeteoMarineResponse.class);
 
         OpenMeteoWeatherResponse weatherResponse = restClient.get()
-                .uri(weatherUrl + "?latitude={lat}&longitude={lng}&hourly=wind_speed_10m,is_day,temperature_2m&daily=sunrise,sunset&timezone=Europe/Madrid&forecast_days=7", lat, lng)
+                .uri(weatherUrl + "?latitude={lat}&longitude={lng}&hourly=wind_speed_10m,wind_direction_10m,is_day,temperature_2m&daily=sunrise,sunset&timezone=Europe/Madrid&forecast_days=7", lat, lng)
                 .retrieve()
                 .body(OpenMeteoWeatherResponse.class);
 
@@ -59,6 +61,10 @@ public class OpenMeteoClient {
                 ? weatherResponse.getHourly().getWindSpeed10m()
                 : List.of();
 
+        List<Double> windDirection = (weatherResponse != null && weatherResponse.getHourly() != null && weatherResponse.getHourly().getWindDirection10m() != null)
+                ? weatherResponse.getHourly().getWindDirection10m()
+                : List.of();
+
         List<Integer> isDay = (weatherResponse != null && weatherResponse.getHourly() != null && weatherResponse.getHourly().getIsDay() != null)
                 ? weatherResponse.getHourly().getIsDay()
                 : List.of();
@@ -80,6 +86,7 @@ public class OpenMeteoClient {
                 .waveHeight(waveHeight)
                 .wavePeriod(wavePeriod)
                 .windSpeed(windSpeed)
+                .windDirection(windDirection)
                 .isDay(isDay)
                 .seaTemperature(seaTemperature)
                 .temperature(temperature)

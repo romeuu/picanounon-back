@@ -2,6 +2,7 @@ package com.picanounon.back.dto.response;
 
 import com.picanounon.back.model.SafetyLevel;
 import com.picanounon.back.model.TidePhase;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,7 @@ public class HourlyForecastResponse {
     private Double waveHeight;
     private Double wavePeriod;
     private Double windSpeed;
+    private Double windDirection;
     private Double seaTemperature;
     private Double temperature;
     private Double tideHeight;

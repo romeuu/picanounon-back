@@ -19,6 +19,7 @@ public class MarineConditionsDTO {
     private Double waveHeight;
     private Double wavePeriod;
     private Double windSpeed;
+    private Double windDirection;
     private TidePhase tidePhase;
     private Double tideHeight;
     private Integer tideCoefficient;

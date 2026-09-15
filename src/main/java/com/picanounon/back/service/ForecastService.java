@@ -159,6 +159,7 @@ public class ForecastService {
                 Double waveHeight = getValueOrDefault(weather.getWaveHeight(), i, 0.0);
                 Double wavePeriod = getValueOrDefault(weather.getWavePeriod(), i, 9.0);
                 Double windSpeed = getValueOrDefault(weather.getWindSpeed(), i, 0.0);
+                Double windDirection = getValueOrDefault(weather.getWindDirection(), i, 0.0);
                 Integer isDay = getValueOrDefault(weather.getIsDay(), i, 1);
                 Double seaTemperature = getValueOrDefault(weather.getSeaTemperature(), i, 15.0);
                 Double airTemperature = getValueOrDefault(weather.getTemperature(), i, 20.0);
@@ -178,6 +179,7 @@ public class ForecastService {
                         .waveHeight(waveHeight)
                         .wavePeriod(wavePeriod)
                         .windSpeed(windSpeed)
+                        .windDirection(windDirection)
                         .tidePhase(tidePhase)
                         .tideHeight(tideHeight)
                         .tideCoefficient(tideCoefficient)
@@ -202,6 +204,7 @@ public class ForecastService {
                         .waveHeight(waveHeight)
                         .wavePeriod(wavePeriod)
                         .windSpeed(windSpeed)
+                        .windDirection(windDirection)
                         .seaTemperature(seaTemperature)
                         .temperature(airTemperature)
                         .tideHeight(tideHeight)
