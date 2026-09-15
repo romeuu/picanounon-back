@@ -1,11 +1,12 @@
 package com.picanounon.back.service.scoring;
 
+import org.springframework.stereotype.Component;
+
 import com.picanounon.back.dto.scoring.MarineConditionsDTO;
 import com.picanounon.back.dto.scoring.ScoreResultDTO;
 import com.picanounon.back.model.SafetyLevel;
 import com.picanounon.back.model.Species;
 import com.picanounon.back.model.TidePhase;
-import org.springframework.stereotype.Component;
 
 @Component
 public class AgullaScoringStrategy implements SpeciesScoringStrategy {
@@ -91,10 +92,13 @@ public class AgullaScoringStrategy implements SpeciesScoringStrategy {
 
         // 5. Fase de Marea (6 pts)
         int tideScore;
-        if (tidePhase == TidePhase.ENCHENTE || tidePhase == TidePhase.PREAMAR) {
+        if (tidePhase == TidePhase.PREAMAR || tidePhase == TidePhase.ENCHENTE) {
             tideScore = 6;
+        } else if (tidePhase == TidePhase.MINGUANTE) {
+            tideScore = 3; // A auga baixa pero aínda conserva calado
         } else {
-            tideScore = 2;
+            // BAIXAMAR: o peirao queda sen auga e a corrente para
+            tideScore = 0;
         }
 
         // 6. Modificador por coeficiente de marea (max +4 pts)
@@ -124,6 +128,12 @@ public class AgullaScoringStrategy implements SpeciesScoringStrategy {
             verdict = "Condicións favorables (Actividade boa)";
         } else if (finalScore >= 40) {
             verdict = "Condicións regulares (Actividade moderada)";
+        }
+
+        // En caso de que a marea este no punto máis baixo, limitamos o score a 65, xa que limita pero a especie sigue saíndo a comer
+        if (tidePhase == TidePhase.BAIXAMAR) {
+            int scoreReducido = (int) Math.round(finalScore * 0.75);
+            finalScore = Math.min(scoreReducido, 65);
         }
 
         return ScoreResultDTO.builder()

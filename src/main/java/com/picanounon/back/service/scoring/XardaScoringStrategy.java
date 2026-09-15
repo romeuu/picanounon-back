@@ -1,11 +1,12 @@
 package com.picanounon.back.service.scoring;
 
+import org.springframework.stereotype.Component;
+
 import com.picanounon.back.dto.scoring.MarineConditionsDTO;
 import com.picanounon.back.dto.scoring.ScoreResultDTO;
 import com.picanounon.back.model.SafetyLevel;
 import com.picanounon.back.model.Species;
 import com.picanounon.back.model.TidePhase;
-import org.springframework.stereotype.Component;
 
 @Component
 public class XardaScoringStrategy implements SpeciesScoringStrategy {
@@ -84,8 +85,11 @@ public class XardaScoringStrategy implements SpeciesScoringStrategy {
         int tideScore;
         if (tidePhase == TidePhase.PREAMAR || tidePhase == TidePhase.ENCHENTE) {
             tideScore = 6;
+        } else if (tidePhase == TidePhase.MINGUANTE) {
+            tideScore = 3; // A auga baixa pero aínda conserva calado
         } else {
-            tideScore = 2;
+            // BAIXAMAR: o peirao queda sen auga e a corrente para
+            tideScore = 0;
         }
 
         // 6. Modificador por coeficiente de marea (max +4 pts)
@@ -107,6 +111,12 @@ public class XardaScoringStrategy implements SpeciesScoringStrategy {
         }
 
         int finalScore = Math.max(0, Math.min(100, waveScore + lightScore + waterTempScore + windScore + tideScore + coeffModifier));
+
+        // En caso de que a marea este no punto máis baixo, limitamos o score a como máximo a un aprobado limitado (55-60)
+        if (tidePhase == TidePhase.BAIXAMAR) {
+            int scoreReducido = (int) Math.round(finalScore * 0.65);
+            finalScore = Math.min(scoreReducido, 58);
+        }
 
         String verdict = "Condicións desfavorables";
         if (finalScore >= 80) {
