@@ -21,7 +21,7 @@ public class XardaScoringStrategy implements SpeciesScoringStrategy {
         boolean isDaylight = Boolean.TRUE.equals(conditions.getIsDaylight());
         boolean isCrepuscular = Boolean.TRUE.equals(conditions.getIsCrepuscular());
 
-        if (!isDaylight) {
+        if (!isDaylight && !isCrepuscular) {
             return ScoreResultDTO.builder()
                     .score(5)
                     .isSafe(true)
